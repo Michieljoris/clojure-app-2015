@@ -1,0 +1,32 @@
+** frontend
+   
+This is a template for a Clojure/ClojureScript app.
+
+Features:
++ Weasel repl
++ Figwheel
++ Documentation in configuration files
+
+  
+Install:
+: lein new mjstarter your-app-name
+: cd your-app-name
+: lein figwheel/cooper??
+: in Emacs:
+: Open a file in your project.
+: M-x cider-connect [RET] localhost [RET] 52123 [RET]
+: In the repl (cljsrepl)
+: start a server in resources/public, open index.html in a browser
+
+Edit src-cljs/<project-name>/core.cljs and the javascript in the browser gets
+reloaded without a page refresh. The same goes for
+resources/public/css/main.css.
+
+For more info see my blog [[http://www.axion5.net/installing-and-using-clojure-and-clojurescipt.html][post]].
+
+-----------------------
+raw-name: frontend
+namespace: frontend.core
+sanitized: frontend/core
+year: 2015
+
