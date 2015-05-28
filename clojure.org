@@ -1,12 +1,12 @@
 * Overview
-http://clojurewebdev.com/workshop/slides/
-https://github.com/enaqx/awesome-react
+- http://clojurewebdev.com/workshop/slides/
+- https://github.com/enaqx/awesome-react
 
 * Clojurescript
-https://github.com/clojure/clojurescript/wiki/Quick-Start
+- https://github.com/clojure/clojurescript/wiki/Quick-Start
 
 * Datomic
-http://www.datomic.com/training.html
+- http://www.datomic.com/training.html
 ** service script
 Put it in etc/init.d
 To start a daemon at startup- update-rc.d service_name defaults
