@@ -12,6 +12,8 @@
                  [environ "1.0.0"]
                  [http-kit "2.1.17"] 
                  [bidi "1.19.0"]
+                 [com.taoensso/sente "1.4.1"]
+                 ;; [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  ]
 
 

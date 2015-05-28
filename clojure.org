@@ -1,0 +1,206 @@
+* Overview
+http://clojurewebdev.com/workshop/slides/
+https://github.com/enaqx/awesome-react
+
+* Clojurescript
+https://github.com/clojure/clojurescript/wiki/Quick-Start
+
+* Datomic
+http://www.datomic.com/training.html
+** service script
+Put it in etc/init.d
+To start a daemon at startup- update-rc.d service_name defaults
+To remove- update-rc.d -f service_name remove
+
+defaults = > default run levels 2,3,4 and 5
+
+Example -
+
+update-rc.d tomcat7 defaults
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          datomic
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# X-Interactive:     false
+# Short-Description: Starts datomic
+# Description:       Start/stop datomic
+### END INIT INFO
+
+
+DAEMON=/home/michieljoris/opt/datomic/bin/transactor
+DAEMON_ARGS=/home/michieljoris/opt/datomic/config/dev-transactor-template.properties
+DESC="datomic script"
+NAME=datomic
+
+RUNDIR=/home/michieljoris/opt/datomic/pid
+PIDFILE=$RUNDIR/datomic.pid
+
+#DAEMON=
+
+do_start()
+{
+
+    echo -n "Starting $DESC: "
+    mkdir -p $RUNDIR
+    # touch $PIDFILE
+    # chown michieljoris:michieljoris $RUNDIR $PIDFILE
+    # chmod 755 $RUNDIR
+   
+   if start-stop-daemon --start -m --quiet --background --umask 007 --pidfile $PIDFILE --chuid michieljoris:michieljoris --exec $DAEMON -- $DAEMON_ARGS
+   then
+       echo "$NAME."
+   else
+       echo "failed"
+   fi
+}
+
+do_stop()
+{
+    echo -n "Stopping $DESC: "
+    if start-stop-daemon --stop --retry forever/TERM/1 --verbose --oknodo --pidfile $PIDFILE 
+    then
+	echo "$NAME."
+    else
+	echo "failed"
+    fi
+    rm -f $PIDFILE
+    sleep 1
+}
+
+
+case "$1" in
+   start)
+     do_start
+     ;;
+   stop)
+     do_stop
+     ;;
+
+  restart|force-reload)
+	${0} stop
+	${0} start
+	;;
+
+  status)
+	echo -n "$DESC is "
+	if start-stop-daemon --status --verbose --signal 0  --pidfile ${PIDFILE}
+	then
+		echo "running"
+	else
+		echo "not running"
+		exit 1
+	fi
+	;;
+
+  *)
+	echo "Usage: /etc/init.d/$NAME {start|stop|restart|status}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
+
+* Datascript
+https://github.com/tonsky/datascript
+
+* Server
+http://www.http-kit.org/client.html
+https://github.com/ring-clojure/ring/blob/master/ring-devel/src/ring/middleware/reload.clj
+http://immutant.org/
+
+* Ring
+https://github.com/ring-clojure/ring
+
+* Routing
+https://github.com/weavejester/compojure
+https://github.com/juxt/bidi
+https://github.com/parenthesis/silk
+https://github.com/gf3/secretary#example-with-googhistory
+
+* Rest api
+** Liberator
+http://clojure-liberator.github.io/liberator/
+https://scott.mn/2014/01/26/first_thoughts_on_liberator_clojure/
+http://yogthos.net/posts/2012-09-09-Making-services-with-Liberator.html
+** Pedestal
+https://github.com/pedestal
+** octohipster
+https://github.com/myfreeweb/octohipster
+
+* client requests
+https://github.com/dakrone/clj-http
+http://www.http-kit.org/client.html
+https://github.com/r0man/cljs-http
+
+* comms betweetn server/client
+https://github.com/ptaoussanis/sente
+https://github.com/james-henderson/chord
+https://github.com/cognitect/transit-cljs
+https://github.com/JulianBirch/cljs-ajax
+
+
+* React wrappers
+** om
+https://github.com/omcljs/om/wiki/Basic-Tutorial
+** reagent
+https://github.com/reagent-project/reagent
+https://www.youtube.com/channel/UC1UP5LiNNNf0a45dA9eDA0Q
+** quiescent
+https://github.com/levand/quiescent/blob/release/docs.md
+** brutha
+https://github.com/weavejester/brutha
+** rum
+https://github.com/tonsky/rum
+
+
+* templating, html
+https://github.com/r0man/sablono
+https://github.com/ckirkendall/kioo
+
+* Tooling
+https://github.com/levand/immuconf
+https://github.com/bhauman/lein-figwheel/wiki/Using-the-Figwheel-REPL-within-NRepl
+** leiningen
+** boot
+https://github.com/boot-clj/boot
+http://adzerk.com/blog/2014/11/clojurescript-builds-rebooted/
+https://github.com/boot-clj/boot/wiki#burndown
+
+* talk on web dev with cljs/react/async etc
+d3 ClojureScript + React
+https://www.youtube.com/watch?v=6_mbxaRDA-s
+
+* components?
+https://github.com/stuartsierra/component
+https://github.com/palletops/leaven
+
+
+* types
+** https://github.com/clojure/core.typed
+** https://github.com/Prismatic/schema
+
+One of the difficulties with bringing Clojure into a team is the overhead of understanding the kind of data (e.g., list of strings, nested map from long to string to double) that a function expects and returns. While a full-blown type system is one solution to this problem, we present a lighter weight solution: schemas. (For more details on why we built Schema, check out this post on the Prismatic blog.)
+
+
+** http://blog.getprismatic.com/schema-for-clojurescript-data-shape-declaration-and-validation/
+
+
+* css
+http://material-ui.com/#/
+** garden
+https://github.com/noprompt/garden
+https://www.youtube.com/watch?v=-jnJGNDoSXc
+
+
+* other
+http://www.jayway.com/2012/06/27/finding-out-who-changed-what-with-datomic/
+http://www.flyingmachinestudios.com/programming/datomic-for-five-year-olds/
+cljs libs:
+http://cljsjs.github.io/
+http://blog.stephenwolfram.com/2015/03/frontiers-of-computational-thinking-a-sxsw-report/
+
+http://www.stuttaford.me/
+http://thegeez.net/2014/04/30/datascript_clojure_web_app.html

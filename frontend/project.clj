@@ -10,6 +10,7 @@
   :dependencies [[org.clojure/clojure "1.7.0-beta2"]
                  [org.clojure/clojurescript "0.0-3269"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [com.taoensso/sente "1.4.1"]
                  ]
   ;; Plugins are code that runs in Leiningen itself and usually
   ;; provide new tasks or hooks.
