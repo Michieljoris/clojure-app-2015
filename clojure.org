@@ -120,7 +120,7 @@ https://github.com/juxt/bidi
 https://github.com/parenthesis/silk
 https://github.com/gf3/secretary#example-with-googhistory
 
-* Rest api
+Rest api
 ** Liberator
 http://clojure-liberator.github.io/liberator/
 https://scott.mn/2014/01/26/first_thoughts_on_liberator_clojure/
@@ -136,10 +136,10 @@ http://www.http-kit.org/client.html
 https://github.com/r0man/cljs-http
 
 * comms betweetn server/client
-https://github.com/ptaoussanis/sente
-https://github.com/james-henderson/chord
-https://github.com/cognitect/transit-cljs
-https://github.com/JulianBirch/cljs-ajax
+- https://github.com/ptaoussanis/sente
+- https://github.com/james-henderson/chord
+- https://github.com/cognitect/transit-cljs
+- https://github.com/JulianBirch/cljs-ajax
 
 
 * React wrappers
@@ -204,3 +204,10 @@ http://blog.stephenwolfram.com/2015/03/frontiers-of-computational-thinking-a-sxs
 
 http://www.stuttaford.me/
 http://thegeez.net/2014/04/30/datascript_clojure_web_app.html
+
+I18n support:
+https://github.com/ptaoussanis/tower 
+A/B testing
+https://github.com/ptaoussanis/touchstone
+
+http://clojurewerkz.org/

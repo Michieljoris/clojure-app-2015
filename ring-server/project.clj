@@ -8,12 +8,20 @@
   :dependencies [[org.clojure/clojure "1.7.0-beta2"]
                  [ring/ring-core "1.3.2"]
                  [ring/ring-devel "1.3.2"]
+
+                 ;; [ring/ring-defaults        "0.1.3"] ; Includes `ring-anti-forgery`, etc.
+
                  ;; https://github.com/weavejester/environ
                  [environ "1.0.0"]
                  [http-kit "2.1.17"] 
                  [bidi "1.19.0"]
                  [com.taoensso/sente "1.4.1"]
-                 ;; [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+
+                 [hiccup "1.0.5"] ; Optional, just for HTML
+                 [com.taoensso/timbre "3.4.0"] 
+
+                 ;; [com.cognitect/transit-clj  "0.8.259"]
                  ]
 
 
