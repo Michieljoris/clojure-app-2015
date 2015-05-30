@@ -15,7 +15,9 @@
                  ;; [hiccup "1.0.5"] ; Optional, just for HTML
                  [hiccups "0.3.0"]
 
-                 [com.taoensso/timbre       "3.3.1"]
+                 [com.taoensso/timbre       "3.3.1"] ;;for encore
+                 [rum "0.2.6"]
+                 [datascript "0.11.2"]
                  ]
   ;; Plugins are code that runs in Leiningen itself and usually
   ;; provide new tasks or hooks.
@@ -29,6 +31,9 @@
   :source-paths ["src"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
+
+  :compiler {  :warnings {:single-segment-namespace false}
+              }
 
   :cljsbuild {
               :builds [{

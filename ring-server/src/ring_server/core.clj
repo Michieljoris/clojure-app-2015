@@ -1,22 +1,32 @@
 (ns ring-server.core 
   (:require 
+   ;;database
+   [datomic.api :as d]
+
+   ;;server
+   [org.httpkit.server :refer [run-server with-channel on-close websocket? on-receive send!]]
+   [taoensso.sente.server-adapters.http-kit :refer (sente-web-server-adapter)]
+
+   ;;ring middleware
    ;; [ring.middleware.defaults]
    [ring.middleware.reload :refer [wrap-reload]]
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
    [ring.middleware.params :refer [wrap-params]]
+   [ring.middleware.cors :refer [wrap-cors]]
 
-   [org.httpkit.server :refer [run-server with-channel on-close websocket? on-receive send!]]
-   [taoensso.sente.server-adapters.http-kit :refer (sente-web-server-adapter)]
-
+   ;;routing
    [bidi.ring :refer [make-handler]]
    [bidi.bidi :refer [match-route path-for]]
 
+   ;;websocket
    [taoensso.sente :as sente] 
+   
+   ;;other
    [clojure.core.async :as async  :refer (<! <!! >! >!! put! chan go go-loop)]
    ;; [taoensso.sente.packers.transit :as sente-transit]
+   [taoensso.timbre    :as timbre :refer (tracef debugf infof warnf errorf)])
+   ;; [clojure.pprint :refer [pprint]]
 
-   [taoensso.timbre    :as timbre :refer (tracef debugf infof warnf errorf)]
-   )
   ;; (:gen-class))
   )
 
@@ -33,26 +43,6 @@
   (def connected-uids                connected-uids) ; Watchable, read-only atom
   )
 
-;; (defn landing-pg-handler [req]
-;;   (hiccup/html
-;;     [:h1 "fooblaSente reference dfasdfexample"]
-;;     [:p "An Ajax/WebSocket connection has been configured (random)."]
-;;     [:hr]
-;;     [:p [:strong "Step 1: "] "Open browser's JavaScript console."]
-;;     [:p [:strong "Step 2: "] "Try: "
-;;      [:button#btn1 {:type "button"} "chsk-send! (w/o reply)"]
-;;      [:button#btn2 {:type "button"} "chsk-send! (with reply)"]]
-;;     ;;
-;;     [:p [:strong "Step 3: "] "See browser's console + nREPL's std-out." ]
-;;     ;;
-;;     [:hr]
-;;     [:h2 "Login with a user-id"]
-;;     [:p  "The server can use this id to send events to *you* specifically."]
-;;     [:p [:input#input-login {:type :text :placeholder "User-id"}]
-;;         [:button#btn-login {:type "button"} "Secure login!"]]
-;;     ;; [:script {:src "main.js"}] ; Include our cljs target
-;;     ))
-
 (defn app [req]
   {:status  200
    :headers {"Content-Type" "text/html"}
@@ -60,9 +50,20 @@
    :body    "ring server"})
 
 
+(defn login!
+  "Here's where you'll add your server-side login/auth procedure (Friend, etc.).
+  In our simplified example we'll just always successfully authenticate the user
+  with whatever user-id they provided in the auth request."
+  [ring-request]
+  (let [{:keys [session params]} ring-request
+        {:keys [user-id]} params]
+    (debugf "Login request: %s" params)
+    {:status 200 :session (assoc session :uid user-id)}))
+
 (def routes ["/" {
                   "" app
                   ;;add more api routes here..
+                  "login" {:post {"" login!}}
                   "chsk" {:get { "" ring-ajax-get-or-ws-handshake }
                           :post { ""  ring-ajax-post }}
                   }]
@@ -70,11 +71,18 @@
 
 (def handler (make-handler routes))
 
+(defn cors-wrapper [handler]
+  (wrap-cors handler
+             :access-control-allow-origin [#"http://localhost:3449"]
+             :access-control-allow-methods [:get :put :post :delete])
+  )
+
 (def ring-handler
   (-> #'handler
       wrap-reload
       wrap-keyword-params
       wrap-params
+      cors-wrapper
       ))
 
 ;;Sente
@@ -114,7 +122,7 @@
   )
 
 (defonce router_ (atom nil))
-(+ 1 1)
+
 (defn  stop-router! [] (when-let [stop-f @router_] (stop-f)))
 
 (defn start-router! []
@@ -150,8 +158,29 @@
   (start-router!)
   (start-web-server! 8080)
   )
+;; (-main)
 
+(defn test-fast-server>user-pushes []
+  (doseq [uid (:any @connected-uids)]
+    (doseq [i (range 100)]
+      (chsk-send! uid [:fast-push/is-fast (str "hello " i "!!")]))))
 
+(comment (test-fast-server>user-pushes))
+
+(defn start-broadcaster! []
+  (go-loop [i 0]
+    (<! (async/timeout 10000))
+    (println (format "Broadcasting server>user: %s" @connected-uids))
+    (doseq [uid (:any @connected-uids)]
+      (chsk-send! uid
+        [:some/broadcast
+         {:what-is-this "A broadcast pushed from server"
+          :how-often    "Every 10 seconds"
+          :to-whom uid
+          :i i}]))
+    (recur (inc i))))
+
+(comment (start-broadcaster!))
 
 
 ;; (GET  "/chsk" req (ring-ajax-get-or-ws-handshake req))
@@ -216,18 +245,6 @@
 ;; ;; As an example of push notifications, we'll setup a server loop to broadcast
 ;; ;; an event to _all_ possible user-ids every 10 seconds:
 
-;; (defn start-broadcaster! []
-;;   (go-loop [i 0]
-;;     (<! (async/timeout 10000))
-;;     (println (format "Broadcasting server>user: %s" @connected-uids))
-;;     (doseq [uid (:any @connected-uids)]
-;;       (chsk-send! uid
-;;         [:some/broadcast
-;;          {:what-is-this "A broadcast pushed from server"
-;;           :how-often    "Every 10 seconds"
-;;           :to-whom uid
-;;           :i i}]))
-;;     (recur (inc i))))
 
 ;;  ; Note that this'll be fast+reliable even over Ajax!:
 ;; (defn test-fast-server>user-pushes []
@@ -325,3 +342,29 @@
 ;;          "//localhost:8080"  (or path pathname))))
 
 ;; (chsk-url-fn "/mypath" { :protocol "https:" :host "localhost:8080"} true)
+
+
+
+(def url (str "datomic:free://127.0.0.1:4334/bar3"))
+
+
+(let [conn (d/connect url)
+      db (d/db conn)
+      result (d/q
+
+              '[:find ?e ?v
+                :where
+                [?e :alerts/id ?v]
+                ]
+              db
+              )]
+  result
+  )
+
+
+
+
+  ;; (d/transact conn [ { 
+  ;;                       :name  "Maksim"
+  ;;                       :age   45
+  ;;                       :aka   ["Maks Otto von Stirlitz", "Jack Ryan"] } ])

@@ -8,6 +8,7 @@
   :dependencies [[org.clojure/clojure "1.7.0-beta2"]
                  [ring/ring-core "1.3.2"]
                  [ring/ring-devel "1.3.2"]
+                 [ring-cors "0.1.7"]
 
                  ;; [ring/ring-defaults        "0.1.3"] ; Includes `ring-anti-forgery`, etc.
 
@@ -21,7 +22,12 @@
                  [hiccup "1.0.5"] ; Optional, just for HTML
                  [com.taoensso/timbre "3.4.0"] 
 
+
+                 [com.datomic/datomic-free "0.9.4755"]
+                 ;; [com.datomic/datomic-pro "0.9.5067"]
+
                  ;; [com.cognitect/transit-clj  "0.8.259"]
+
                  ]
 
 

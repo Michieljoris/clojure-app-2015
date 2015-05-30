@@ -11,12 +11,28 @@
 
    [cljs.core.async :as async :refer (<! >! put! chan)]
    [taoensso.sente  :as sente :refer (cb-success?)]
+   [rum]
+   [datascript :as d]
+
    [hiccups.runtime :as hiccupsrt]
 
 
    [taoensso.encore :as enc    :refer (tracef debugf infof warnf errorf)]
+   [clojure.string     :as str]
    )
   )
+
+(let [schema {:aka {:db/cardinality :db.cardinality/many}}
+      conn   (d/create-conn schema)]
+  (d/transact! conn [ { :db/id -1
+                        :name  "Maksim"
+                        :age   45
+                        :aka   ["Maks Otto von Stirlitz", "Jack Ryan"] } ])
+  (d/q '[ :find  ?n ?a
+          :where [?e :aka "Maks Otto von Stirlitz"]
+                 [?e :name ?n]
+                 [?e :age  ?a] ]
+       @conn))
 
 (defn set-html
   "Sets `.innerHTML` of the given tagert element to the give `html`"
@@ -120,7 +136,12 @@
 ;;           "</div>")
 
 ;; (set-html document.body (my-template))
-(set-html document.body (body))
+;; (set-html document.body (body))
+
+(rum/defc label [n text]
+  [:.label (repeat n text)])
+
+(rum/mount (label 10  "abc") (.-body js/document))
 
 ;;;; Routing handlers
 
@@ -134,7 +155,7 @@
 (defmulti event-msg-handler :id) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
 (defn     event-msg-handler* [{:as ev-msg :keys [id ?data event]}]
-  (debugf "Event: %s" event)
+  ;; (debugf "Event: %s" event)
   (event-msg-handler ev-msg))
 
 (do ; Client-side methods
@@ -144,9 +165,10 @@
 
   (defmethod event-msg-handler :chsk/state
     [{:as ev-msg :keys [?data]}]
-    (if (= ?data {:first-open? true})
-      (debugf "Channel socket successfully established!")
-      (debugf "Channel socket state change: %s" ?data)))
+    ;; (if (= ?data {:first-open? true})
+    ;;   (debugf "Channel socket successfully established!")
+    ;;   (debugf "Channel socket state change: %s" ?data))
+    )
 
   (defmethod event-msg-handler :chsk/recv
     [{:as ev-msg :keys [?data]}]
@@ -155,10 +177,23 @@
   (defmethod event-msg-handler :chsk/handshake
     [{:as ev-msg :keys [?data]}]
     (let [[?uid ?csrf-token ?handshake-data] ?data]
-      (debugf "Handshake: %s" ?data)))
+      ;; (debugf "Handshake: %s" ?data)
+      ))
 
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )
+
+(def router_ (atom nil))
+
+(defn  stop-router! [] (when-let [stop-f @router_] (stop-f)))
+(defn start-router! []
+  (stop-router!)
+  (reset! router_ (sente/start-chsk-router! ch-chsk event-msg-handler*)))
+
+(defn start! []
+  (start-router!)
+  )
+(start!)
 
 ;;;; Client-side UI
 
@@ -177,3 +212,32 @@
       (chsk-send! [:example/button2 {:had-a-callback? "indeed"}] 5000
         (fn [cb-reply] (debugf "Callback reply: %s" cb-reply))))))
 
+
+(when-let [target-el (.getElementById js/document "btn-login")]
+  (.addEventListener target-el "click"
+    (fn [ev]
+      (let [user-id (.-value (.getElementById js/document "input-login"))]
+        (if (str/blank? user-id)
+          (js/alert "Please enter a user-id first")
+          (do
+            (debugf "Logging in with user-id %s" user-id)
+
+            ;;; Use any login procedure you'd like. Here we'll trigger an Ajax
+            ;;; POST request that resets our server-side session. Then we ask
+            ;;; our channel socket to reconnect, thereby picking up the new
+            ;;; session.
+
+            (sente/ajax-call "http://localhost:8080/login"
+              {:method :post
+               :params {:user-id    (str user-id)
+                        :csrf-token (:csrf-token @chsk-state)}}
+              (fn [ajax-resp]
+                (debugf "Ajax login response: %s" ajax-resp)
+                (let [login-successful? true ; Your logic here
+                      ]
+                  (if-not login-successful?
+                    (debugf "Login failed")
+                    (do
+                      (debugf "Login successful")
+                      (sente/chsk-reconnect! chsk))))))
+            ))))))
