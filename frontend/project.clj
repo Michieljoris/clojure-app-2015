@@ -11,6 +11,11 @@
                  [org.clojure/clojurescript "0.0-3269"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.taoensso/sente "1.4.1"]
+
+                 ;; [hiccup "1.0.5"] ; Optional, just for HTML
+                 [hiccups "0.3.0"]
+
+                 [com.taoensso/timbre       "3.3.1"]
                  ]
   ;; Plugins are code that runs in Leiningen itself and usually
   ;; provide new tasks or hooks.

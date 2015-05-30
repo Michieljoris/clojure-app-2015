@@ -211,3 +211,11 @@ A/B testing
 https://github.com/ptaoussanis/touchstone
 
 http://clojurewerkz.org/
+
+
+* setup
+
+lein repl in ring-server dir
+lein figwheel in fronted dir
+
+in emacs repl for ring-server repl and fig for frontend repl

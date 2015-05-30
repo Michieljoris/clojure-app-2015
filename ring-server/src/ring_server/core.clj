@@ -15,7 +15,6 @@
    [clojure.core.async :as async  :refer (<! <!! >! >!! put! chan go go-loop)]
    ;; [taoensso.sente.packers.transit :as sente-transit]
 
-   [hiccup.core        :as hiccup]
    [taoensso.timbre    :as timbre :refer (tracef debugf infof warnf errorf)]
    )
   ;; (:gen-class))
@@ -34,31 +33,31 @@
   (def connected-uids                connected-uids) ; Watchable, read-only atom
   )
 
-(defn landing-pg-handler [req]
-  (hiccup/html
-    [:h1 "fooblaSente reference dfasdfexample"]
-    [:p "An Ajax/WebSocket connection has been configured (random)."]
-    [:hr]
-    [:p [:strong "Step 1: "] "Open browser's JavaScript console."]
-    [:p [:strong "Step 2: "] "Try: "
-     [:button#btn1 {:type "button"} "chsk-send! (w/o reply)"]
-     [:button#btn2 {:type "button"} "chsk-send! (with reply)"]]
-    ;;
-    [:p [:strong "Step 3: "] "See browser's console + nREPL's std-out." ]
-    ;;
-    [:hr]
-    [:h2 "Login with a user-id"]
-    [:p  "The server can use this id to send events to *you* specifically."]
-    [:p [:input#input-login {:type :text :placeholder "User-id"}]
-        [:button#btn-login {:type "button"} "Secure login!"]]
-    ;; [:script {:src "main.js"}] ; Include our cljs target
-    ))
+;; (defn landing-pg-handler [req]
+;;   (hiccup/html
+;;     [:h1 "fooblaSente reference dfasdfexample"]
+;;     [:p "An Ajax/WebSocket connection has been configured (random)."]
+;;     [:hr]
+;;     [:p [:strong "Step 1: "] "Open browser's JavaScript console."]
+;;     [:p [:strong "Step 2: "] "Try: "
+;;      [:button#btn1 {:type "button"} "chsk-send! (w/o reply)"]
+;;      [:button#btn2 {:type "button"} "chsk-send! (with reply)"]]
+;;     ;;
+;;     [:p [:strong "Step 3: "] "See browser's console + nREPL's std-out." ]
+;;     ;;
+;;     [:hr]
+;;     [:h2 "Login with a user-id"]
+;;     [:p  "The server can use this id to send events to *you* specifically."]
+;;     [:p [:input#input-login {:type :text :placeholder "User-id"}]
+;;         [:button#btn-login {:type "button"} "Secure login!"]]
+;;     ;; [:script {:src "main.js"}] ; Include our cljs target
+;;     ))
 
 (defn app [req]
   {:status  200
    :headers {"Content-Type" "text/html"}
    ;; :body    "foobarfoobarhello HTTP!"})
-   :body    (landing-pg-handler req)})
+   :body    "ring server"})
 
 
 (def routes ["/" {
@@ -82,7 +81,7 @@
 (defmulti event-msg-handler :id) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
 (defn event-msg-handler* [{:as ev-msg :keys [id ?data event]}]
-  (debugf "Event: %s" event)
+  ;; (debugf "Event: %s" event)
   (event-msg-handler ev-msg))
 
 
@@ -95,11 +94,27 @@
       (when ?reply-fn
         (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
 
+  (defmethod event-msg-handler :chsk/ws-ping 
+    [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+    (let [session (:session ring-req)
+          uid     (:uid     session)]
+      ;; (debugf "Ping event: %s" event)
+      (when ?reply-fn
+        (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
+
+  (defmethod event-msg-handler :example/button1
+    [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+    (let [session (:session ring-req)
+          uid     (:uid     session)]
+      (debugf "Button1 foobar: %s" event)
+      (when ?reply-fn
+        (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
+
   ;; Add your (defmethod event-msg-handler <event-id> [ev-msg] <body>)s here...
   )
 
 (defonce router_ (atom nil))
-
+(+ 1 1)
 (defn  stop-router! [] (when-let [stop-f @router_] (stop-f)))
 
 (defn start-router! []
@@ -265,3 +280,48 @@
 ;;            ;; When unspecified, `close-after-send?` defaults to true for HTTP channels
 ;;            ;; and false for WebSocket.  (send! channel data close-after-send?)
 ;;                           (send! channel data))))) 
+
+;; (def myurl
+;;   "(ƒ [path window-location websocket?]) -> server-side chsk route URL string.
+;;     * path       - As provided to client-side `make-channel-socket!` fn
+;;                    (usu. \"/chsk\").
+;;     * websocket? - True for WebSocket connections, false for Ajax (long-polling)
+;;                    connections.
+;;     * window-location - Map with keys:
+;;       :href     ; \"http://www.example.org:80/foo/bar?q=baz#bang\"
+;;       :protocol ; \"http:\" ; Note the :
+;;       :hostname ; \"example.org\"
+;;       :host     ; \"example.org:80\"
+;;       :pathname ; \"/foo/bar\"
+;;       :search   ; \"?q=baz\"
+;;       :hash     ; \"#bang\"
+;;   Note that the *same* URL is used for: WebSockets, POSTs, GETs. Server-side
+;;   routes should be configured accordingly."
+;;   (fn [path {:as window-location :keys [protocol host pathname]} websocket?]
+;;     (str (if-not websocket? protocol (if (= protocol "https:") "wss:" "ws:"))
+;;      "//" host (or path pathname))))
+
+;; (myurl "/mypath" { :protocol "https:" :host "localhost:8080"} true)
+
+
+;; (def chsk-url-fn
+;;   "(ƒ [path window-location websocket?]) -> server-side chsk route URL string.
+;;     * path       - As provided to client-side `make-channel-socket!` fn
+;;                    (usu. \"/chsk\").
+;;     * websocket? - True for WebSocket connections, false for Ajax (long-polling)
+;;                    connections.
+;;     * window-location - Map with keys:
+;;       :href     ; \"http://www.example.org:80/foo/bar?q=baz#bang\"
+;;       :protocol ; \"http:\" ; Note the :
+;;       :hostname ; \"example.org\"
+;;       :host     ; \"example.org:80\"
+;;       :pathname ; \"/foo/bar\"
+;;       :search   ; \"?q=baz\"
+;;       :hash     ; \"#bang\"
+;;   Note that the *same* URL is used for: WebSockets, POSTs, GETs. Server-side
+;;   routes should be configured accordingly."
+;;   (fn [path {:as window-location :keys [protocol host pathname]} websocket?]
+;;     (str (if-not websocket? protocol (if (= protocol "https:") "wss:" "ws:"))
+;;          "//localhost:8080"  (or path pathname))))
+
+;; (chsk-url-fn "/mypath" { :protocol "https:" :host "localhost:8080"} true)
