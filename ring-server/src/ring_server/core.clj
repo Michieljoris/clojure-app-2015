@@ -24,8 +24,8 @@
    ;;other
    [clojure.core.async :as async  :refer (<! <!! >! >!! put! chan go go-loop)]
    ;; [taoensso.sente.packers.transit :as sente-transit]
-   [taoensso.timbre    :as timbre :refer (tracef debugf infof warnf errorf)])
-   ;; [clojure.pprint :refer [pprint]]
+   [taoensso.timbre    :as timbre :refer (tracef debugf infof warnf errorf)]
+   [clojure.pprint :refer [pprint]])
 
   ;; (:gen-class))
   )
@@ -345,21 +345,49 @@
 
 
 
-(def url (str "datomic:free://127.0.0.1:4334/bar3"))
+;; (def url (str "datomic:free://127.0.0.1:4334/bar3"))
+;; (def conn (d/connect url))
+;; (def db (d/db conn))
+;; (def db2 (d/db conn))
+;; (def db3 (d/db conn))
+
+;; (def group10 
+;;   (first (first
+;;           (d/q  '[:find ?e ?name
+;;                   :in $ 
+;;                   :where
+;;                   [?e :groups/id 10]
+;;                   [?e :groups/name ?name]
+;;                   ]
+;;                 db )))) 
+
+;; (pprint (d/pull db '[:groups/name {:users/_group_id  [:users/name :users/id]}] [:groups/id 10]))
+
+;; (def r (d/transact conn
+;;                    [{:db/id  #db/id[:db.part/user]
+;;                      :people/id 10
+;;                      :people/name "Bob3"
+;;                      ;; :people/email "bob@example.com"
+;;                      }
+;;                     ]
+;;                    ))
+
+;; (d/q  '[:find  ?e ?name ?id
+;;         :in $ ?id
+;;         :where
+;;         [?e :people/id ?id]
+;;         [?e :people/name ?name]
+;;         ]
+;;       db 10) 
 
 
-(let [conn (d/connect url)
-      db (d/db conn)
-      result (d/q
-
-              '[:find ?e ?v
-                :where
-                [?e :alerts/id ?v]
-                ]
-              db
-              )]
-  result
-  )
+;; (d/q  '[:find  ?e ?tx ?date ?v
+;;         :in $ 
+;;         :where
+;;         [?e :people/name "Bob3" ?tx ?v]
+;;         [?tx _ ?date]
+;;         ]
+;;       db3 ) 
 
 
 

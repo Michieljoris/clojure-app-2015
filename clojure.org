@@ -219,3 +219,55 @@ lein repl in ring-server dir
 lein figwheel in fronted dir
 
 in emacs repl for ring-server repl and fig for frontend repl
+
+
+* design
+** Stack:
+Clojure/Clojurescript
+Datomic
+(Bidi, for incidental routing)
+Sente
+Datascript
+Rum/Quiescent/Reagent
+** No state in url
+No routing in backend or frontend
+** Persist data and app state in local storage
+ http://www.html5rocks.com/en/features/storage
+http://www.html5rocks.com/en/tutorials/offline/quota-research/
+http://demo.agektmr.com/storage/
+http://stackoverflow.com/questions/2989284/what-is-the-max-size-of-localstorage-values
+Compress before storing?:
+https://github.com/k-yak/JJLC
+** Frontend queries datascript
+and gets map to give to react
+
+
+** Syncing problem
+Also is latency problem
+This is a writing problem
+Server needs to be single threaded for write operations, to make writes
+sequential.
+Every entity on the client is stored with a sequential index
+When writing an attribute of the entity increase the seq.
+Client sends entity id, seq and one or more attributes to save.
+Server only updates attr when seq is same. 
+
+** Browser limited storage problem
+We can not duplicate the server's db, but need to make do with a (small) subset.
+about 5 or 10mb for localstorage
+- compress before persisting
+- make system for expiring/culling datoms
+- keep track of how big the datascript db is
+- components can ask for data if it's missing
+- can keep much more in memory
+*** Every component knows what it needs
+If it's not there it can ask, once every component has asked for what it needs,
+a map can be built and the request sent to the server.
+But make a hash of it first and send that first? So only send the map when the server hasn't seen it yet.
+Or a ui page needs to declare the data map it needs first perhaps.
+
+** Partial collection problem
+As a result of a search, or filter. Or just paged results, sorted in whatever way.
+** Subscription problem
+Clients need to indicate what data they're interested in
+

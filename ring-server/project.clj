@@ -22,9 +22,8 @@
                  [hiccup "1.0.5"] ; Optional, just for HTML
                  [com.taoensso/timbre "3.4.0"] 
 
-
-                 [com.datomic/datomic-free "0.9.4755"]
-                 ;; [com.datomic/datomic-pro "0.9.5067"]
+                 [com.datomic/datomic-free "0.9.5173"]
+                 ;; [com.datomic/datomic-pro "0.9.5173"]
 
                  ;; [com.cognitect/transit-clj  "0.8.259"]
 

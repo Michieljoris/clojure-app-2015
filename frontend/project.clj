@@ -18,6 +18,8 @@
                  [com.taoensso/timbre       "3.3.1"] ;;for encore
                  [rum "0.2.6"]
                  [datascript "0.11.2"]
+
+                 [fipp "0.6.2"]
                  ]
   ;; Plugins are code that runs in Leiningen itself and usually
   ;; provide new tasks or hooks.

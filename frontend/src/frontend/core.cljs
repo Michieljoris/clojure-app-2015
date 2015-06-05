@@ -5,7 +5,7 @@
    )
   (:require 
    ;; standard and piggieback:
-   [clojure.browser.repl :as repl] 
+   ;; [clojure.browser.repl :as repl] 
    ;; weasel:
    ;; [weasel.repl :as ws-repl]
 
@@ -19,20 +19,40 @@
 
    [taoensso.encore :as enc    :refer (tracef debugf infof warnf errorf)]
    [clojure.string     :as str]
+   [cljs.pprint :refer (pprint)]
    )
   )
 
-(let [schema {:aka {:db/cardinality :db.cardinality/many}}
-      conn   (d/create-conn schema)]
-  (d/transact! conn [ { :db/id -1
-                        :name  "Maksim"
-                        :age   45
-                        :aka   ["Maks Otto von Stirlitz", "Jack Ryan"] } ])
-  (d/q '[ :find  ?n ?a
-          :where [?e :aka "Maks Otto von Stirlitz"]
-                 [?e :name ?n]
-                 [?e :age  ?a] ]
-       @conn))
+
+;; (def schema {:aka {:db/cardinality :db.cardinality/many}})
+;; (def conn   (d/create-conn ))
+;; (def r  (d/transact! conn [
+;;                            { :db/id 104
+;;                              :name  "Bijou"
+;;                             }
+
+;;                            { :db/id 103
+;;                              :name  "Bijou"
+;;                             }
+;;                            ]))
+;; (pprint (first r))
+;; (d/q '[ :find  ?e ?name ?tx 
+;;        :where [?e :name ?name ?tx ]
+;;         ]
+;;      @conn)
+
+
+;; (let [schema {:aka {:db/cardinality :db.cardinality/many}}
+;;       conn   (d/create-conn schema)]
+;;   (d/transact! conn [ { :db/id -1
+;;                         :name  "Maksim"
+;;                         :age   45
+;;                         :aka   ["Maks Otto von Stirlitz", "Jack Ryan"] } ])
+;;   (d/q '[ :find  ?n ?a
+;;           :where [?e :aka "Maks Otto von Stirlitz"]
+;;                  [?e :name ?n]
+;;                  [?e :age  ?a] ]
+;;        @conn))
 
 (defn set-html
   "Sets `.innerHTML` of the given tagert element to the give `html`"
@@ -44,7 +64,7 @@
   [target & text]
   (set! target.textContent (apply str text)))
 
-(.log js/console " Hey foo bla sup?!")
+(.log js/console "Hi Bijou?!")
 
 ;; standard and piggyback:
 ;; (repl/connect "http://localhost:8090/repl")
@@ -136,12 +156,12 @@
 ;;           "</div>")
 
 ;; (set-html document.body (my-template))
-;; (set-html document.body (body))
+(set-html document.body (body))
 
 (rum/defc label [n text]
   [:.label (repeat n text)])
 
-(rum/mount (label 10  "abc") (.-body js/document))
+;; (rum/mount (label 1  "Hi Bijou! ") (.-body js/document))
 
 ;;;; Routing handlers
 
@@ -193,7 +213,7 @@
 (defn start! []
   (start-router!)
   )
-(start!)
+;; (start!)
 
 ;;;; Client-side UI
 
